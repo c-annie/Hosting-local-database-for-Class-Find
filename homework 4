@@ -34,6 +34,30 @@ function writeSearch(req, res) {
     let html = `
         <html>
         <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .toggle {
+                background-color: #438D98;
+                color:white;
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: center;
+                outline: none;
+                font-size: 17px;
+            }
+            .active, .toggle:hover {
+                background-color: #00A5B1;
+            }
+            body{ 
+                text-align:center; 
+            }
+            p{
+                background-color: #f7fbfd;
+                font-size: 20px;
+            }
+            </style>
         </head>
         <body>
             <h1> Spring 2021 CSE Class Find</h1><br>
@@ -50,7 +74,7 @@ function writeSearch(req, res) {
                 </select>
                 <input type = "submit" value ="Submit">
                 <br>
-                Example Searches: 214, Fodor, 12:00 PM, MW
+                Example Searches: 214, Fodor, 12:00 PM, F
             </form>
             <br><br>
             `;
@@ -58,7 +82,7 @@ function writeSearch(req, res) {
     let sql = "SELECT * FROM courses;";
     if (filter == "allFields") {
         sql = `SELECT * FROM courses
-                WHERE Subject           LIKE '%` + search + `%' OR 
+                WHERE Subject     LIKE '%` + search + `%' OR 
                 Course            LIKE '%` + search + `%' OR 
                 CourseName            LIKE '%` + search + `%' OR 
                 Component            LIKE '%` + search + `%' OR 
@@ -92,41 +116,42 @@ function writeSearch(req, res) {
     }
     else if (filter == "Day") {
         sql = `SELECT * FROM courses
-                WHERE Days LIKE            '%` + search + `%'; `; 
+                WHERE Days LIKE            '%` + search + `%'
+                ORDER BY StartTime;`;
     }
     else if (filter == "Time") {
         sql = `SELECT * FROM courses
                 WHERE StartTime            LIKE '%` + search + `%' OR 
-                    EndTime            Like '%` + search + `%'
-                    ORDER BY StartTime;`;
+                    EndTime            Like '%` + search + `%';`;
     }
     con.query(sql, function (err, result) {
         if (err) throw err;
         for (let item of result) {
-            html += ` 
-                <button type = "button" class= "toggle"> CSE` + item.Course + ` ` +
-                item.CourseName + ` ` + item.Component + ` Section` + item.Section + ` </botton> 
-                <pre> 
-                    Days: ` + item.Days + `
-                    Start Time: ` + item.StartTime + `
-                    End Time: ` + item.EndTime + ` 
-                    Start Date: ` + item.StartDate + ` 
-                    End Date: ` + item.EndDate + ` 
-                    Duration: ` + item.Duration + ` 
-                    Instruction Mode: ` + item.InstructionMode + ` 
-                    Building: ` + item.Building + ` 
-                    Room: ` + item.Room + ` 
-                    Instructor: ` + item.Instructor + ` 
-                    Enrollment Cap: ` + item.EnrollCap + ` 
-                    Wait Cap: ` + item.WaitCap + ` 
-                    Combined Description: ` + item.CombDesc + ` 
-                    Combined Enrollment Cap: ` + item.CombEnrollCap + `<form action="/schedule" method ="get"> <br> 
-                    <button name="add" value="` + item.id + `">Add Class </button></form></pre>`;
+        html += ` 
+        <button type = "button" class=toggle> CSE ` + item.Course + ` - ` + item.CourseName + 
+        ` - ` + item.Component + ` - Section ` + item.Section + ` </button> 
+        <p> 
+            Days: ` + item.Days + ` <br> 
+            Start Time: ` + item.StartTime + `<br>
+            End Time: ` + item.EndTime + ` <br>
+            Start Date: ` + item.StartDate + ` <br>
+            End Date: ` + item.EndDate + ` <br>
+            Duration: ` + item.Duration + ` mins <br>
+            Instruction Mode: ` + item.InstructionMode + ` <br>
+            Building: ` + item.Building + ` <br> 
+            Room: ` + item.Room + ` <br> 
+            Instructor: ` + item.Instructor + ` <br> 
+            Enrollment Cap: ` + item.EnrollCap + ` <br> 
+            Wait Cap: ` + item.WaitCap + ` <br> 
+            Combined Description: ` + item.CombDesc + ` <br> 
+            Combined Enrollment Cap: ` + item.CombEnrollCap + `<br> 
+            </p>
+            <form action="/schedule" method ="get" width> 
+            <button name="add" value="` + item.id + `">Add Class </button></form>`;
         }
         res.write(html + "\n\n</body>\n</html>");
         res.end();
     });
-
 };
 
 function writeSchedule(req, res) {
@@ -137,27 +162,36 @@ function writeSchedule(req, res) {
         <html> 
         <head> 
             <style type = text/css> 
-                table, tr, th, td { 
+                table{ 
+                    background-color: AliceBlue; 
+                    width: 100%; 
+                }
+                tr:hover {
+                    background-color: #f5f5f5;
+                }
+                th, td { 
                     background-color: AliceBlue; 
                     border: 5px solid CadetBlue; 
                     height: 50px; 
                     vertical-align: bottom; 
                     padding: 10px; 
                     text-align: left;
+                    border-collapse: collapse;
                 }
             </style> 
         </head> 
         <body> 
-            <h1 style="font-size:300%; text-align:center;" > Schedule </h1> <br>
-            <a href = "/"><b>Return to Search</b></a> 
-            <br><br> 
+            <p style="font-size:50px; text-align:center;" ><b>Schedule<b></p> 
+            <p style="text-align:center">
+            <a href = "/" style="font-size: 20px;"><b>Return to Search</b></a> 
+            </p>
             <table> 
-                <tr> 
-                    <th> Mon </th> 
-                    <th> Tue </th> 
-                    <th> Wed </th> 
-                    <th> Thu </th> 
-                    <th> Fri </th> 
+                <tr style="font-size: 30px; text-align:center"> 
+                    <th> Monday </th> 
+                    <th> Tuesday </th> 
+                    <th> Wednesady </th> 
+                    <th> Thursday </th> 
+                    <th> Friday </th> 
                 </tr> 
                 <tr> 
                     <td> Mon </td> 
@@ -185,10 +219,10 @@ function writeSchedule(req, res) {
                     con.query(constructSQLDayCommand("TH"), function (err, result) {
                         if (err) throw err;
                         html = html.replace("<td> Thu </td>", getDay(result, "THU"));
-                        con.query(constructSQLDayCommand("FR"), function (err, result) {
+                        con.query(constructSQLDayCommand("F"), function (err, result) {
                             if (err) throw err;
                             html = html.replace("<td> Fri </td>", getDay(result, "FRI"));
-                            res.write(html + "\n\n</body>\n</html>"); 
+                            res.write(html + "\n\n</body>\n</html>");
                             res.end();
                         });
                     });
@@ -217,6 +251,6 @@ function getDay(SQLResult, tableHeader) {
 function constructSQLDayCommand(search) {
     var sql = `SELECT * FROM saved
                 WHERE Days LIKE '%` + search + `%'
-                ORDER BY StartTime;`; 
+                ORDER BY StartTime;`;
     return sql;
 }
