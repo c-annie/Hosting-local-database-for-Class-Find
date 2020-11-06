@@ -122,7 +122,8 @@ function writeSearch(req, res) {
     else if (filter == "Time") {
         sql = `SELECT * FROM courses
                 WHERE StartTime            LIKE '%` + search + `%' OR 
-                    EndTime            Like '%` + search + `%';`;
+                EndTime            Like '%` + search + `%'
+                ORDER BY StartTime;`;
     }
     con.query(sql, function (err, result) {
         if (err) throw err;
@@ -169,7 +170,16 @@ function writeSchedule(req, res) {
                 tr:hover {
                     background-color: #f5f5f5;
                 }
-                th, td { 
+                th{ 
+                    background-color: #6BCBCF; 
+                    border: 5px solid CadetBlue;
+                    height: 50px; 
+                    vertical-align: bottom; 
+                    padding: 10px; 
+                    text-align: left;
+                    border-collapse: collapse; 
+                }
+                td { 
                     background-color: AliceBlue; 
                     border: 5px solid CadetBlue; 
                     height: 50px; 
