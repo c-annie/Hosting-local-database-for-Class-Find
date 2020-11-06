@@ -97,14 +97,15 @@ function writeSearch(req, res) {
     else if (filter == "Time") {
         sql = `SELECT * FROM courses
                 WHERE StartTime            LIKE '%` + search + `%' OR 
-                    EndTime            Like '%` + search + `%';`;
+                    EndTime            Like '%` + search + `%'
+                    ORDER BY StartTime;`;
     }
     con.query(sql, function (err, result) {
         if (err) throw err;
         for (let item of result) {
             html += ` 
                 <button type = "button" class= "toggle"> CSE` + item.Course + ` ` +
-                item.CourseName + ` ` + item.Component + ` Section` + item.Section + `</botton> 
+                item.CourseName + ` ` + item.Component + ` Section` + item.Section + ` </botton> 
                 <pre> 
                     Days: ` + item.Days + `
                     Start Time: ` + item.StartTime + `
@@ -120,7 +121,7 @@ function writeSearch(req, res) {
                     Wait Cap: ` + item.WaitCap + ` 
                     Combined Description: ` + item.CombDesc + ` 
                     Combined Enrollment Cap: ` + item.CombEnrollCap + `<form action="/schedule" method ="get"> <br> 
-                    <button name= ="add" value = "` + item.id + `">Add Class </button></form></pre>`;
+                    <button name="add" value="` + item.id + `">Add Class </button></form></pre>`;
         }
         res.write(html + "\n\n</body>\n</html>");
         res.end();
@@ -130,45 +131,45 @@ function writeSearch(req, res) {
 
 function writeSchedule(req, res) {
     let query = url.parse(req.url, true).query;
-    let addQuery = `INSERT INTO saved SELECT * FROM courses WHERE courses.id =` + query.add + `";`
+    let addQuery = ` INSERT INTO saved SELECT * FROM courses WHERE courses.id = "` + query.add + `" ;`
 
     let html = ` 
-            <html> 
-            <head> 
-                <title> SCHEDULE </title> 
-                <style type = test/css> 
-                table, tr, th, td{ 
-                    border: 5px, solid blue; 
+        <html> 
+        <head> 
+            <style type = text/css> 
+                table, tr, th, td { 
+                    background-color: AliceBlue; 
+                    border: 5px solid CadetBlue; 
                     height: 50px; 
                     vertical-align: bottom; 
-                    padding: 3px; 
+                    padding: 10px; 
                     text-align: left;
                 }
-                </style> 
-                </head> 
-                <body> 
-                    <h1> Schedule </h1> <br> 
-                    <a href = "/"><b> Return to Search</b></a> 
-                    <br><br> 
-                    <table> 
-                    <tr> 
-                        <th> Mon </th> 
-                        <th> Tue </th> 
-                        <th> Wed </th> 
-                        <th> Thu </th> 
-                        <th> Fri </th> 
-                    </tr> 
-                    <tr> 
-                        <td> Mon </td> 
-                        <td> Tue </td> 
-                        <td> Wed </td> 
-                        <td> Thu </td> 
-                        <td> Fri </td> 
-                    </tr> 
-                    </table> 
-                </body> 
-                </html> 
-                `;
+            </style> 
+        </head> 
+        <body> 
+            <h1 style="font-size:300%; text-align:center;" > Schedule </h1> <br>
+            <a href = "/"><b>Return to Search</b></a> 
+            <br><br> 
+            <table> 
+                <tr> 
+                    <th> Mon </th> 
+                    <th> Tue </th> 
+                    <th> Wed </th> 
+                    <th> Thu </th> 
+                    <th> Fri </th> 
+                </tr> 
+                <tr> 
+                    <td> Mon </td> 
+                    <td> Tue </td> 
+                    <td> Wed </td> 
+                    <td> Thu </td> 
+                    <td> Fri </td> 
+                </tr> 
+            </table> 
+        </body> 
+        </html> 
+    `;
 
     con.query(addQuery, function (err, result) {
         if (err) console.log(err);
@@ -187,26 +188,27 @@ function writeSchedule(req, res) {
                         con.query(constructSQLDayCommand("FR"), function (err, result) {
                             if (err) throw err;
                             html = html.replace("<td> Fri </td>", getDay(result, "FRI"));
+                            res.write(html + "\n\n</body>\n</html>"); 
                             res.end();
                         });
                     });
                 });
             });
         });
-
     });
 }
 
 function getDay(SQLResult, tableHeader) {
     let retStr = "<td>";
     for (let item of SQLResult) {
-        retStr += "\n <b> " + item.StartTime + " - " +
-            item.EndTime + " <br><br>" +
+        retStr += "\n <b>" +
             item.Subject + " " +
             item.Course + "-" +
             item.Section + " </b> <p>" +
             item.CourseName + "<br><br>" +
             item.Instructor + "<br><br>" +
+            item.StartTime + " - " +
+            item.EndTime + " <br><br>" +
             "<br/><br/>";
     }
     return retStr + "</td>";
@@ -214,6 +216,7 @@ function getDay(SQLResult, tableHeader) {
 
 function constructSQLDayCommand(search) {
     var sql = `SELECT * FROM saved
-                WHERE Days LIKE '%` + search + `%';`; 
+                WHERE Days LIKE '%` + search + `%'
+                ORDER BY StartTime;`; 
     return sql;
 }
