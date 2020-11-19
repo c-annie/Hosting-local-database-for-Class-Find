@@ -4,7 +4,7 @@ var con = mysql.createConnection({
     port: "3306",
     user: "root",
     password: "1016",
-    database: "cse316",
+    database: "cse316"
 });
 
 const express = require("express");
